@@ -10,10 +10,10 @@ def calculate_demographic_data(print_data=True):
 
     # What is the average age of men?
     dftemp = df.loc[df["sex"] == "Male"]
-    average_age_men = dftemp["age"].mean() #✔️
+    average_age_men = round(dftemp["age"].mean(), 1) #✔️
 
     # What is the percentage of people who have a Bachelor's degree?
-    percentage_bachelors = 100.*df.education.eq('Bachelors').sum()/df.shape[0] #✔️
+    percentage_bachelors = round(100.*df.education.eq('Bachelors').sum()/df.shape[0], 1) #✔️
 
     # What percentage of people with advanced education (`Bachelors`, `Masters`, or `Doctorate`) make more than 50K?
     # What percentage of people without advanced education make more than 50K?
@@ -25,23 +25,36 @@ def calculate_demographic_data(print_data=True):
     # percentage with salary >50K #✔️
     tempholder = df[((df["education"] == "Bachelors") | (df["education"] == "Masters") | (df["education"] == "Doctorate")) & (df["salary"] == ">50K")]
     tempholder2 = df[~((df["education"] == "Bachelors") | (df["education"] == "Masters") | (df["education"] == "Doctorate")) & (df["salary"] == ">50K")]
-    higher_education_rich = 100.*tempholder.shape[0]/higher_education
-    lower_education_rich = 100.*tempholder2.shape[0]/lower_education
+    higher_education_rich = round(100.*tempholder.shape[0]/higher_education, 1)
+    lower_education_rich = round(100.*tempholder2.shape[0]/lower_education, 1)
 
-    # What is the minimum number of hours a person works per week (hours-per-week feature)?
-    min_work_hours = None
+    # What is the minimum number of hours a person works per week (hours-per-week feature)? #✔️
+    min_work_hours = df["hours-per-week"].min()
 
-    # What percentage of the people who work the minimum number of hours per week have a salary of >50K?
-    num_min_workers = None
+    # What percentage of the people who work the minimum number of hours per week have a salary of >50K? #✔️
+    num_min_workers = df[(df["hours-per-week"] == 1)].shape[0]
+    tempholder3 = df[(df["hours-per-week"] == 1) & (df["salary"] == ">50K")].shape[0]
+    rich_percentage = 100.*tempholder3/num_min_workers
 
-    rich_percentage = None
-
-    # What country has the highest percentage of people that earn >50K?
-    highest_earning_country = None
-    highest_earning_country_percentage = None
+    # What country has the highest percentage of people that earn >50K? #✔️
+    df1 = df[["salary","native-country","occupation"]]
+    group1 = df1.groupby('native-country')
+    group1.head()
+    counter1 = group1['native-country'].count()
+    counter1
+    only_richdudes = df1.loc[df1["salary"] == ">50K"]
+    only_richdudes
+    group2 = only_richdudes.groupby('native-country')
+    group2.head()
+    counter2 = group2['native-country'].count()
+    counter2
+    result_frame = pd.DataFrame({"Total": counter1 , "Only rich dudes": counter2})
+    result_frame["percentage"] =( result_frame["Only rich dudes"] / result_frame["Total"]) * 100
+    highest_earning_country = result_frame["percentage"].idxmax()
+    highest_earning_country_percentage = round(result_frame["percentage"].max(), 1)
 
     # Identify the most popular occupation for those who earn >50K in India.
-    top_IN_occupation = None
+    top_IN_occupation = df1[(df1[("native-country")] == "India") & (df1["salary"] == ">50K")]["occupation"].value_counts().idxmax()
 
     # DO NOT MODIFY BELOW THIS LINE
 
